@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +16,8 @@ public class QuizActivity extends AppCompatActivity {
     private Button mNextButton;
     private Button mPrevButton;
     private TextView mQuestionTextView;
+    private EditText mEssayAnswer;
+    private Button mSubmitButton;
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
             new Question(R.string.question_mideast, false),
@@ -22,7 +25,16 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_americas, true),
             new Question(R.string.question_asia, true),
     };
+
+    private Question[] mEssayQuestionBank = new Question[] {
+            new Question(R.string.question_oceans, "Benar"),
+            new Question(R.string.question_mideast, "Salah"),
+            new Question(R.string.question_africa, "Salah"),
+            new Question(R.string.question_americas, "Benar"),
+            new Question(R.string.question_asia, "Benar"),
+    };
     private int mCurrentIndex = 0;
+    private String essayAnswer = "";
 
     private static final String TAG = "QuizActivity"; //for LOG.d
     private static final String KEY_INDEX = "index"; //for onSavedInstanceState
@@ -30,6 +42,12 @@ public class QuizActivity extends AppCompatActivity {
     //THIS METHOD IS USED TO UPDATE QUESTION DEPENDS ON THE INDEX VALUE
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
+        mQuestionTextView.setText(question);
+    }
+
+    //THIS METHOD IS USED TO UPDATE ESSAY QUESTION DEPENDS ON THE INDEX VALUE
+    private void updateEssayQuestion(){
+        int question = mEssayQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
     }
 
@@ -42,9 +60,22 @@ public class QuizActivity extends AppCompatActivity {
         } else {
             messageResId = R.string.incorrect_toast;
         }
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
-                .show();
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
+
+    //THIS METHOD CHECKS WHETHER ANSWER IS TRUE OR FALSE
+    private void checkEssayAnswer(String userAnswer){
+        String answerIsTrue = mEssayQuestionBank[mCurrentIndex].isTrueAnswer();
+        int messageResId = 0;
+        if (userAnswer.equalsIgnoreCase(answerIsTrue)){
+            messageResId = R.string.correct_toast;
+        } else {
+            messageResId = R.string.incorrect_toast;
+        }
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+    }
+
+    //THIS IS THE MAIN METHOD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +89,8 @@ public class QuizActivity extends AppCompatActivity {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
 
-        mTrueButton = (Button) findViewById(R.id.true_button);
+        //THIS IS FOR TRUE OR FALSE QUESTIONS
+        /*mTrueButton = (Button) findViewById(R.id.true_button);
         mFalseButton = (Button) findViewById(R.id.false_button);
 
         mTrueButton.setOnClickListener(new View.OnClickListener() {
@@ -73,6 +105,20 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View v) {
                 checkAnswer(false);
             }
+        });*/
+
+        //THIS IS FOR ESSAY QUESTIONS
+        mEssayAnswer = (EditText) findViewById(R.id.submit_answer);
+
+
+        mSubmitButton = (Button) findViewById(R.id.submit_button);
+
+        mSubmitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                essayAnswer = mEssayAnswer.getText().toString();
+                checkEssayAnswer(essayAnswer);
+            }
         });
 
         mNextButton = (Button) findViewById(R.id.next_button);
@@ -81,16 +127,18 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-                updateQuestion();
+                mCurrentIndex = (mCurrentIndex + 1) % mEssayQuestionBank.length;
+                //updateQuestion(); INACTIVATED FOR ESSAY MODE
+                updateEssayQuestion();
             } });
 
         mPrevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentIndex = (mCurrentIndex - 1) % mQuestionBank.length;
-                if (mCurrentIndex < 0) mCurrentIndex = mQuestionBank.length-1;
-                updateQuestion();
+                mCurrentIndex = (mCurrentIndex - 1) % mEssayQuestionBank.length;
+                if (mCurrentIndex < 0) mCurrentIndex = mEssayQuestionBank.length-1;
+                //updateQuestion(); INACTIVATED FOR ESSAY MODE
+                updateEssayQuestion();
             }
         });
     }
